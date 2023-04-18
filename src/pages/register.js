@@ -7,6 +7,8 @@ import { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Certification from './Certification.json'
 import {connectWallet} from './login';
+import image from './VERICRYPT.png';
+import image1 from './image1.jpeg';
 
  function Dashboard() {
   let navigate = useNavigate();
@@ -141,6 +143,8 @@ setGotError1('');
 
   return(
     <FormContainer> 
+  {/* <img className='bg' src={image} alt='bg'/> */}
+
       <div className='forms'>
     <form action=''>
       <div className="brand">
@@ -200,7 +204,8 @@ height: auto;
   justify-content: center;
   gap: 1rem;
   align-items: center;
-  background-color: #131324;
+  background-color: #1e1928  ;
+  
   .brand {
     display: flex;
     align-items: center;
@@ -235,7 +240,8 @@ height: auto;
     background-color: #00000076;
     border-radius: 2rem;
     padding: 3rem 5rem;
-    border: 0.1rem solid #4e0eff;
+    border: 0.1rem solid #5a2651
+    ;
 
     h2 {
       color: white;
@@ -243,7 +249,8 @@ height: auto;
     }
     p{
       color: white;
-      border: 0.1rem solid #4e0eff;
+      border: 0.1rem solid #5a2651
+      ;
       border-radius: 0.4rem;
       padding: 1rem;
      }
@@ -300,18 +307,20 @@ height: auto;
   input {
     background-color: transparent;
     padding: 1rem;
-    border: 0.1rem solid #4e0eff;
+    border: 0.1rem solid #5a2651
+    ;
     border-radius: 0.4rem;
     color: white;
     width: 60%;
     font-size: 1rem;
     &:focus {
-      border: 0.1rem solid #997af0;
+      border: 0.1rem solid #5a2651
+      ;
       outline: none;
     }
   }
   button {
-    background-color: #4e0eff;
+    background-color: #893177;
     color: white;
     padding: 1rem 2rem;
     border: none;
@@ -321,7 +330,7 @@ height: auto;
     font-size: 1rem;
     text-transform: capitalize;
     &:hover {
-      background-color: #926BFF;
+      background-color: #8c58ae;
     }
     
   }.button2{

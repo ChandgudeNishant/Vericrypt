@@ -5,7 +5,8 @@ import { ethers } from "ethers";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Certification from './Certification.json'
-
+import image from './VERICRYPT.png';
+import image1 from './image1.jpeg';
 export default function Login() {
 
   
@@ -15,9 +16,10 @@ export default function Login() {
     
 <>    
 <FormContainer> 
+  {/* <img className='bg' src={image} alt='bg'/> */}
     <form action=''>
       <div className="brand">
-      <img src={Logo} alt="Sanjivani.png"/>
+      <img src={Logo} alt="Logo.png"/>
         <h1>Vericrypt</h1>
       </div>
       <center>
@@ -34,14 +36,25 @@ export default function Login() {
 
 }
 const FormContainer = styled.div`
-height: 100vh;
+height: 170vh;
   width: 100vw;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 1rem;
   align-items: center;
-  background-color: #131324;
+  background-color: #1e1928  ;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.1)),
+  url(${image1});
+height: 100vh;
+background-position: center;
+background-size: cover;
+  .bg{
+  
+    height: 1200vh;
+    background-position: center;
+    background-size: cover;
+    }
   .brand {
     display: flex;
     align-items: center;
@@ -69,7 +82,7 @@ height: 100vh;
     text-transform: uppercase;
   }
   button {
-    background-color: #4e0eff;
+    background-color: #893177;
     color: white;
     padding: 1rem 2rem;
     border: none;
@@ -77,11 +90,10 @@ height: 100vh;
     cursor: pointer;
     border-radius: 0.4rem;
     font-size: 1rem;
-    text-transform: uppercase;
+    text-transform: capitalize;
     &:hover {
-      background-color: #926BFF;
+      background-color: #8c58ae;
     }
-  }
   span {
     color: white;
     text-transform: uppercase;
@@ -91,4 +103,5 @@ height: 100vh;
       font-weight: bold;
     }
   }
+ 
 `;

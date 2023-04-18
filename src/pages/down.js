@@ -95,7 +95,7 @@ const CertificateGenerator = () => {
 export default CertificateGenerator;
 
 const FormContainer = styled.div`
-background-color: #131324;
+background-color: #1e1928;
 position: relative;
 
   display: flex;
@@ -178,28 +178,28 @@ label{
 input {
   background-color: transparent;
   padding: 1rem;
-  border: 0.1rem solid #4e0eff;
+  border: 0.1rem solid #5a2651;
   border-radius: 0.4rem;
   color: white;
   width: 60%;
   font-size: 1rem;
   &:focus {
-    border: 0.1rem solid #997af0;
+    border: 0.1rem solid #5a2651;
     outline: none;
   
-  }}  button { 
-      background-color: #4e0eff;
-      color: white;
-      padding: 1rem 1rem;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 0.4rem;
-      font-size: 1rem;
-      text-transform: uppercase;
-      &:hover {
-        background-color: #926BFF;
-      }
+  }}   button {
+    background-color: #893177;
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0.4rem;
+    font-size: 1rem;
+    text-transform: capitalize;
+    &:hover {
+      background-color: #8c58ae;
+    }
 `;
 
  

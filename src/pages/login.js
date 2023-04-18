@@ -4,7 +4,7 @@ import styled from "styled-components";
 import Logo from "./logo.png";
 //import {useNavigate} from 'react-router-dom';
 import { useEffect, useState } from "react";
-
+import image from './VERICRYPT.png';
 //let [contractData, setContractData] = useState("");
 
 export default function Login() {
@@ -86,9 +86,11 @@ export default function Login() {
   
   return(
     <FormContainer> 
+        <img className='bg' src={image} alt='bg'/>
+
     <form action=''>
       <div className="brand">
-      <img src={Logo} alt="Sanjivani.png"/>
+      <img src={Logo} alt="Logo.png"/>
       <h1>Vericrypt</h1>
        
       </div>
@@ -101,14 +103,20 @@ export default function Login() {
 
 }
 const FormContainer = styled.div`
-height: 100vh;
+height: 165vh;
   width: 100vw;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 1rem;
   align-items: center;
-  background-color: #131324;
+  background-color: #1e1928  ;
+  .bg{
+  
+    height: 1200vh;
+    background-position: center;
+    background-size: cover;
+    }
   .brand {
     display: flex;
     align-items: center;
@@ -131,7 +139,7 @@ height: 100vh;
     padding: 3rem 5rem;
   }
   button {
-    background-color: #4e0eff;
+    background-color: #893177;
     color: white;
     padding: 1rem 2rem;
     border: none;
@@ -141,7 +149,7 @@ height: 100vh;
     font-size: 1rem;
     text-transform: uppercase;
     &:hover {
-      background-color: #4e0eff;
+      background-color: #8c58ae;
     }
   }
   h1 {

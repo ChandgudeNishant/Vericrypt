@@ -16,7 +16,7 @@ export default function Marksheet() {
   
   return (
 <FormContainer>
-<img src={Logo} alt="Sanjivani.png"/>
+<img src={Logo} alt="Logo.png"/>
 
 <h1>Vericrypt</h1>
  <div className='head'>Coming soon...✌️ </div>
@@ -32,7 +32,7 @@ height: 100vh;
   justify-content: center;
   gap: 1rem;
   align-items: center;
-  background-color: #131324;
+  background-color: #1e1928  ;
   .head{
     color: white;
     font-weight:bold;
