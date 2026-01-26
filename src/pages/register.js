@@ -1,361 +1,553 @@
-import React from 'react';
+import React, { useState } from "react";
 import styled from "styled-components";
-//import Logo from './logo.jpg';
-import Logo from "./logo.png";
 import { ethers } from "ethers";
-import { useState,useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Certification from './Certification.json'
-import {connectWallet} from './login';
-import image from './VERICRYPT.png';
-import image1 from './image1.jpeg';
+import { useNavigate } from "react-router-dom";
+import Certification from "./smart-contract-abi/Certification.json";
 
- function Dashboard() {
+import {
+  FaSearch,
+  FaFileContract,
+  FaUserGraduate,
+  FaBuilding,
+  FaBook,
+  FaCalendarAlt,
+  FaArrowLeft,
+  FaCheck,
+  FaTimes,
+  FaCheckCircle,
+} from "react-icons/fa";
+import { getProviderAndSigner } from "../utils/ethereum";
+import {
+  PageContainer,
+  GlassCard,
+  GlassInput,
+  GlassInputGroup,
+  GlassButton,
+  BackButton,
+} from "../components/common/GlassComponents";
+
+import DashboardHeader from "../components/common/DashboardHeader";
+import polygonIcon from "./images/image.png";
+
+function Dashboard() {
   let navigate = useNavigate();
-  const [gotError, setGotError] = useState('');
-  const [gotError1, setGotError1] = useState('');
+  const [gotError, setGotError] = useState("");
+  const [gotError1, setGotError1] = useState("");
+  const [ownerRight, setOwnerRight] = useState("");
 
-  const [ownerRight, setOwnerRight] = useState('');
-const owner = '0xD7E3fa332A5C590EF889c51Fcf48b31b5d408937'
-  const [walletAddress, setWalletAddress] = useState("");
-  const [certificateId, setCertificateId] = useState('');
+  // Hardcoded for now, but ideally env var
+  const owner = "0xD7E3fa332A5C590EF889c51Fcf48b31b5d408937";
+  const contractAddress = "0x4de5523c1000104AB91007DBF0210bF8c303D5c4";
+
   const [certificateData, setCertificateData] = useState({});
-  const contractAddress = '0xF8Ed294EF891ACcB8B33138F42faD57117b61d03';
-  //const privateKey = process.env.REACT_APP_PRIVATE_KEY;
-  const providerUrl = process.env.REACT_APP_PROVIDER_URL;
 
-      const accounts =  window.ethereum.request({ method: 'eth_requestAccounts' });
+  // Form State for validation
+  const [certId, setCertId] = useState("");
+  const [batchYear, setBatchYear] = useState("");
+  const [showIdChecks, setShowIdChecks] = useState(false);
+  const [showBatchChecks, setShowBatchChecks] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdCertId, setCreatedCertId] = useState("");
 
-      // Create Web3Provider instance
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-  
-      // Create Signer instance
-      const signer = provider.getSigner(accounts[0]);
-  
-      // Create contract instance
-      const contract = new ethers.Contract(contractAddress, Certification.abi, signer);
-  
-  //const provider = new ethers.providers.JsonRpcProvider(providerUrl);
-  //const signer = provider.getSigner();
-  //const wallet = new ethers.Wallet(privateKey, provider);
+  // Validation Check Functions
+  const isIdLengthValid = certId.length > 5;
+  // Check if starts with exactly 3 alphabets
+  const isIdAlphasValid = /^[a-zA-Z]{3}/.test(certId);
+  // Check if the rest (after first 3) are numbers.
+  // We can just check the whole string pattern: ^[a-zA-Z]{3}[0-9]+$
+  // But to keep separate checks for the UI checklist:
+  // "Remaining characters should be numbers" implies we check characters from index 3 onwards
+  const isIdNumbersValid =
+    /^[0-9]+$/.test(certId.slice(3)) && certId.length > 3;
 
-  //const contract = new ethers.Contract(contractAddress, Certification.abi, wallet);
- 
+  const isBatchValid = /^\d{4}$/.test(batchYear);
 
-  const [address, setAddress] = useState('');
-  const [balance, setBalance] = useState('');
+  const generateCertificate = async (e) => {
+    e.preventDefault();
+    try {
+      const { signer } = await getProviderAndSigner();
+      if (signer) {
+        const contract = new ethers.Contract(
+          contractAddress,
+          Certification.abi,
+          signer,
+        );
 
-  useEffect(() => {
-    async function getAccountInfo() {
-      if (typeof window.ethereum !== 'undefined') {
-        try {
-          // Connect to MetaMask
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const currentAddress = await signer.getAddress();
 
-          // Create provider and signer objects
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
-          const signer = provider.getSigner();
+        if (currentAddress === owner) {
+          let CertificateId = certId; // Use state
+          let NameOfStudent = document.getElementById("NameOfStudent").value;
+          let NameOfOrg = document.getElementById("NameOfOrg").value;
+          let NameOfCourse = document.getElementById("NameOfCourse").value;
+          let BatchYear = batchYear; // Use state
 
-          // Get account address
-          const address = await signer.getAddress();
-          setAddress(address);
+          // Validation Logic (using the computed checks)
+          if (!isIdLengthValid || !isIdAlphasValid || !isIdNumbersValid) {
+            let errorDetails = [];
+            if (!isIdLengthValid) errorDetails.push("ID length > 5");
+            if (!isIdAlphasValid)
+              errorDetails.push("First 3 chars must be alphabets");
+            if (!isIdNumbersValid)
+              errorDetails.push("Ending chars must be numbers");
 
-          // Get account balance
-          const balanceWei = await signer.getBalance();
-          const balanceEth = ethers.utils.formatEther(balanceWei);
-          setBalance(balanceEth);
-        } catch (err) {
-          console.error(err);
+            setGotError(`Invalid Certificate ID: ${errorDetails.join(", ")}`);
+            return;
+          }
+
+          if (!isBatchValid) {
+            setGotError("Batch Year must be exactly 4 digits.");
+            return;
+          }
+
+          const tx = await contract.generateCertificate(
+            CertificateId,
+            NameOfStudent,
+            NameOfOrg,
+            NameOfCourse,
+            BatchYear,
+          );
+          await tx.wait();
+          setGotError("");
+          setOwnerRight("");
+          // alert("Certificate generated successfully!");
+          setCreatedCertId(CertificateId);
+          setShowSuccessModal(true);
+        } else {
+          setOwnerRight(`Access Denied: Admin Rights Required`);
         }
-      } else {
-        console.log('MetaMask not detected');
       }
-    }
-
-    getAccountInfo();
-  }, []);
-  // async function accountData(){
-  //   const address = await signer.getAddress();
-  //   console.log('Account Address:', address);
-  //   const balanceWei = await signer.getBalance();
-  //   const balanceEth = ethers.utils.formatEther(balanceWei);
-  //   console.log('Account Balance:', balanceEth, 'Matic');
-  // }
-  // accountData();
-  const generateCertificate = async () => {
-    try {
-   if(address == owner){
-    
-  let CertificateId = document.querySelector("#CertificateId").value;
-  let NameOfStudent = document.querySelector("#NameOfStudent").value;
-  let NameOfOrg = document.querySelector("#NameOfOrg").value;
-  let NameOfCourse = document.querySelector("#NameOfCourse").value;
-  let BatchYear = document.querySelector("#BatchYear").value;
-
-      const tx = await contract.generateCertificate(
-        CertificateId,
-        NameOfStudent,
-        NameOfOrg,
-        NameOfCourse,
-        BatchYear
-      );
-      await tx.wait();
-      setGotError('');
-      setOwnerRight('');
-      console.log('Certificate generated!');
-      alert("Certificate generated!");
-   }else{
-    console.log("You are not the Admin");
-    setOwnerRight(`You don't have Admin Rights`);
-   }
     } catch (error) {
-      console.log('Error generating certificate:', error);
-      setGotError(`"Error" Please check the Book ID and for more info check console`);
+      console.error(error);
+      // Extract detailed error reason if available
+      const reason =
+        error.reason || error.data?.message || error.message || "Unknown Error";
+      // Simplify common errors
+      let displayError = reason;
+      if (reason.includes("user rejected")) {
+        displayError = "Transaction rejected by user.";
+      } else if (reason.includes("Certificate with this ID already exists")) {
+        displayError = "Error: Certificate ID already exists!";
+      } else {
+        // Truncate very long error messages
+        displayError =
+          displayError.length > 100
+            ? displayError.substring(0, 100) + "..."
+            : displayError;
+      }
 
+      setGotError(`Transaction Failed: ${displayError}`);
     }
   };
 
-
-const getData = async () => {
-  
+  const getData = async () => {
     try {
-      
-  let CertificateId1 = document.querySelector("#CertificateId1").value;
-       const data = await contract.getData(CertificateId1);
-      setCertificateData({
-        
-        candidateName: data[0],
-        orgName: data[1],
-        courseName: data[2],
-        batchYear: data[3].toString(),
-      });
-      //console.log(data);
-setGotError1('');
-    } catch (error) {
-      console.log('Error getting certificate data:', error);
-      setGotError1(`"Error" Please enter valid ID and for more info check console`);
+      const { signer } = await getProviderAndSigner();
+      if (signer) {
+        const contract = new ethers.Contract(
+          contractAddress,
+          Certification.abi,
+          signer,
+        );
 
+        let CertificateId1 = document.getElementById("CertificateId1").value;
+        const data = await contract.getData(CertificateId1);
+        console.log(data[4].toString());
+        setCertificateData({
+          candidateName: data[0],
+          orgName: data[1],
+          courseName: data[2],
+          batchYear: data[3].toString(),
+          blockNumber: data[4].toString(),
+        });
+        setGotError1("");
+      }
+    } catch (error) {
+      console.error(error);
+      setGotError1(`Certificate not found or invalid ID.`);
     }
   };
 
+  return (
+    <PageContainer>
+      <DashboardHeader />
 
+      <MainGrid>
+        <BackButton
+          onClick={() => navigate("/dashboard")}
+          style={{
+            gridColumn: "1 / -1",
+            marginBottom: "1rem",
+            width: "fit-content",
+          }}
+        >
+          <FaArrowLeft /> Back
+        </BackButton>
 
+        {/* Generation Section */}
+        <GlassCard maxWidth="100%">
+          <SectionTitle>Generate Certificate</SectionTitle>
+          <Form onSubmit={generateCertificate}>
+            <GlassInputGroup>
+              <FaFileContract className="icon" />
+              <GlassInput
+                type="text"
+                id="CertificateId"
+                placeholder="Certificate ID"
+                required
+                value={certId}
+                onChange={(e) => setCertId(e.target.value)}
+                onFocus={() => setShowIdChecks(true)}
+              />
+            </GlassInputGroup>
+            {showIdChecks && (
+              <ValidationContainer>
+                <ValidationItem isValid={isIdLengthValid}>
+                  {isIdLengthValid ? <FaCheck /> : <FaTimes />} More than 5
+                  characters (e.g. ABC123)
+                </ValidationItem>
+                <ValidationItem isValid={isIdAlphasValid}>
+                  {isIdAlphasValid ? <FaCheck /> : <FaTimes />} First 3
+                  characters should be alphabets
+                </ValidationItem>
+                <ValidationItem isValid={isIdNumbersValid}>
+                  {isIdNumbersValid ? <FaCheck /> : <FaTimes />} Remaining
+                  characters should be numbers
+                </ValidationItem>
+              </ValidationContainer>
+            )}
+            <GlassInputGroup>
+              <FaUserGraduate className="icon" />
+              <GlassInput
+                type="text"
+                id="NameOfStudent"
+                placeholder="Student Name"
+                required
+              />
+            </GlassInputGroup>
+            <GlassInputGroup>
+              <FaBuilding className="icon" />
+              <GlassInput
+                type="text"
+                id="NameOfOrg"
+                placeholder="Organization"
+                required
+              />
+            </GlassInputGroup>
+            <GlassInputGroup>
+              <FaBook className="icon" />
+              <GlassInput
+                type="text"
+                id="NameOfCourse"
+                placeholder="Course Name"
+                required
+              />
+            </GlassInputGroup>
+            <GlassInputGroup>
+              <FaCalendarAlt className="icon" />
+              <GlassInput
+                type="text"
+                id="BatchYear"
+                placeholder="Batch Year"
+                required
+                value={batchYear}
+                onChange={(e) => setBatchYear(e.target.value)}
+                onFocus={() => setShowBatchChecks(true)}
+              />
+            </GlassInputGroup>
+            {showBatchChecks && (
+              <ValidationContainer>
+                <ValidationItem isValid={isBatchValid}>
+                  {isBatchValid ? <FaCheck /> : <FaTimes />} Exact 4 digits
+                </ValidationItem>
+              </ValidationContainer>
+            )}
 
-  return(
-    <FormContainer> 
-  {/* <img className='bg' src={image} alt='bg'/> */}
+            {gotError && <ErrorMessage>{gotError}</ErrorMessage>}
+            {ownerRight && <ErrorMessage>{ownerRight}</ErrorMessage>}
 
-      <div className='forms'>
-    <form action=''>
-      <div className="brand">
-      <img src={Logo} alt="Sanjivani.png"/>
-        <h1>Vericrypt</h1>
+            <GlassButton type="submit" fullWidth>
+              Create Certificate
+            </GlassButton>
+            <GlassButton
+              type="button"
+              secondary
+              fullWidth
+              onClick={() => navigate("/down")}
+              style={{ marginTop: "10px" }}
+            >
+              Go to Download
+            </GlassButton>
+          </Form>
+        </GlassCard>
 
-        <p><span>Account Address:</span> <p className='under'>{address}</p></p>
-        <p><span>Account Balance:</span> <p className='under'> {balance}</p> <span>Matic</span></p>   
-         </div>
-      <label>Certificate ID</label>
-      <input type="text" id = "CertificateId"
-        placeholder="Certificate ID" name="Certificate ID" required/>
-      <label>Name of Student</label>
-      <input type="text" id='NameOfStudent' placeholder="Name of Student"
-        name="Name of Student" required/>
-      <label>Name of Organization</label>
-      <input type="text" id='NameOfOrg'
-        placeholder="Name of Organization"  name="COrganization Name" required/>
-    <label>Name of Course</label>
-      <input type="text" id='NameOfCourse'
-        placeholder="Name of Course" name="Course Name" required/>
-      <label>Batch Year</label>
-      <input type="text" id='BatchYear'
-        placeholder="Batch Year"  name="Batch Year" required/>
-       
-    </form>
-     <p>{gotError}</p>
-     <p>{ownerRight}</p>
+        {/* Verification Section */}
+        <GlassCard maxWidth="100%">
+          <SectionTitle>Verify Certificate</SectionTitle>
+          <VerificationBox>
+            <SearchBox>
+              <GlassInputGroup style={{ flex: 1 }}>
+                <FaFileContract className="icon" />
+                <GlassInput
+                  type="text"
+                  id="CertificateId1"
+                  placeholder="Enter Certificate ID to Verify"
+                />
+              </GlassInputGroup>
+              <IconButton onClick={getData}>
+                <FaSearch />
+              </IconButton>
+            </SearchBox>
 
-    <button className="button1" type="submit" onClick={generateCertificate}> register</button>
-        </div>
-      
-      <button className='button2' onClick={() => {navigate('/down')}}> Generate Certificate</button>
-    
-      <div className='data1'>
-        <button className="button" onClick={getData}>Verify Certificate Data</button>
-        <label>Certificate ID</label>
-      <input type="text" id = "CertificateId1" placeholder="Certificate ID" name="Certificate ID" required/>
-      <h4>{gotError1}</h4>
+            {gotError1 && <ErrorMessage>{gotError1}</ErrorMessage>}
 
-          <h2>Certificate Credential:</h2>
-          <p>Candidate Name: <span className='data'>{certificateData.candidateName}</span></p>
-          <p>Organization Name: <span className='data'>{certificateData.orgName}</span></p>
-          <p>Course Name: <span className='data'>{certificateData.courseName}</span></p>
-          <p>Batch Year: <span className='data'>{certificateData.batchYear}</span></p>
-      </div>
-    </FormContainer> 
+            {certificateData.candidateName && (
+              <ResultCard>
+                <h3>Certificate Details</h3>
+                <ResultRow>
+                  <span>Candidate:</span> {certificateData.candidateName}
+                </ResultRow>
+                <ResultRow>
+                  <span>Organization:</span> {certificateData.orgName}
+                </ResultRow>
+                <ResultRow>
+                  <span>Course:</span> {certificateData.courseName}
+                </ResultRow>
+                <ResultRow>
+                  <span>Year:</span> {certificateData.batchYear}
+                </ResultRow>
+                <ResultRow>
+                  <span>Verification:</span>
+                  <a
+                    href={`https://amoy.polygonscan.com/block/${certificateData.blockNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: "var(--accent-color)",
+                      textDecoration: "underline",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                    }}
+                  >
+                    <img
+                      src={polygonIcon}
+                      alt="Polygon"
+                      style={{ width: "20px", height: "20px" }}
+                    />
+                    View on Polygonscan
+                  </a>
+                </ResultRow>
+              </ResultCard>
+            )}
+          </VerificationBox>
+        </GlassCard>
+      </MainGrid>
 
+      {showSuccessModal && (
+        <ModalOverlay>
+          <ModalContent>
+            <FaCheckCircle
+              style={{
+                color: "var(--success-color)",
+                fontSize: "3rem",
+                marginBottom: "1rem",
+              }}
+            />
+            <SectionTitle
+              style={{
+                textAlign: "center",
+                borderBottom: "none",
+                marginBottom: "0.5rem",
+              }}
+            >
+              Success!
+            </SectionTitle>
+            <p
+              style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}
+            >
+              Certificate generated successfully.
+            </p>
+            <CertificateIdDisplay>
+              ID: <span>{createdCertId}</span>
+            </CertificateIdDisplay>
+            <GlassButton onClick={() => setShowSuccessModal(false)} fullWidth>
+              Back
+            </GlassButton>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+    </PageContainer>
   );
-
 }
-const FormContainer = styled.div`
-height: auto;
-  width: auto;
+
+const MainGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 480px));
+  justify-content: center;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+`;
+
+const SectionTitle = styled.h2`
+  margin-top: 0;
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 1rem;
+  color: var(--text-primary);
+  width: 100%;
+  text-align: left;
+`;
+
+const Form = styled.form`
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 1rem;
-  align-items: center;
-  background-color: #1e1928  ;
-  
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    justify-content: center;
-    img {
-      height: 5rem;
-    }
-    h1 {
-
-      color: white;
-      text-transform: uppercase;
-    }
-    .under{
-      color:grey;
-      text-decoration: underline;
-    }
-    p {
-   
-      color: white;
-      text-transform: uppercase;
-    }
-
-
-
-  }
-  .data1{  
-    margin-top:50px;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    background-color: #00000076;
-    border-radius: 2rem;
-    padding: 3rem 5rem;
-    border: 0.1rem solid #5a2651
-    ;
-
-    h2 {
-      color: white;
-      text-transform: capitalize;
-    }
-    p{
-      color: white;
-      border: 0.1rem solid #5a2651
-      ;
-      border-radius: 0.4rem;
-      padding: 1rem;
-     }
-    }
-  
-  .button{
-    margin-right: 10px;
-    margin-left: 10px;
-  }
-
-  form {
-    height: 100vh;
-    display: flex;
-    justify-items: center;
-    flex-direction: column;
-    gap: 2rem;
-    background-color: #00000076;
-    border-radius: 2rem;
-    padding: 3rem 5rem;
-  }
-
-  .forms {
-    position: relative;
-    align-items: center;
-    p{
-      color: white;
-      
-      text-transform: capitalize;
-      align-items: center;
-  
-     }
-  }
-
-  .button1{
-    position: absolute;
-    bottom: 2rem;
-    left: 15rem;
-    margin-bottom: 2rem;
-  }
-  
- 
-  h3{
-    color: white;
-      text-transform: uppercase;
-  }
-  label{
-    color: white;
-      text-transform: uppercase;
-  }
-  h4{
-    color: white;
-  }
-
-  input {
-    background-color: transparent;
-    padding: 1rem;
-    border: 0.1rem solid #5a2651
-    ;
-    border-radius: 0.4rem;
-    color: white;
-    width: 60%;
-    font-size: 1rem;
-    &:focus {
-      border: 0.1rem solid #5a2651
-      ;
-      outline: none;
-    }
-  }
-  button {
-    background-color: #893177;
-    color: white;
-    padding: 1rem 2rem;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 0.4rem;
-    font-size: 1rem;
-    text-transform: capitalize;
-    &:hover {
-      background-color: #8c58ae;
-    }
-    
-  }.button2{
-     margin-top:50px;
-      align-items: center;
-
-    }
-  .data {
-    text-decoration: underline;
-
-    font-weight:bold;
-    
-    text-transform: uppercase;
-    a {
-      color: #4e0eff;
-      text-decoration: none;
-      font-weight: bold;
-    }
-  }
-  span{
-    font-weight:bold;
-
-  }
-
-
+  width: 100%;
 `;
+
+const VerificationBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+`;
+
+const SearchBox = styled.div`
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+`;
+
+const IconButton = styled.button`
+  background: var(--accent-gradient);
+  border: none;
+  width: 50px; // Fixed width for icon button
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+`;
+
+const ResultCard = styled.div`
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  border: 1px solid var(--success-color);
+
+  h3 {
+    margin-top: 0;
+    color: var(--success-color);
+  }
+`;
+
+const ResultRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+  span {
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-right: 10px;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const ValidationContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.25rem;
+  padding-left: 0.5rem;
+  margin-bottom: 0.5rem;
+`;
+
+const ValidationItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: ${(props) =>
+    props.isValid ? "var(--success-color)" : "var(--text-secondary)"};
+  margin-bottom: 4px;
+  transition: color 0.3s;
+
+  svg {
+    font-size: 0.75rem;
+    color: ${(props) => (props.isValid ? "var(--success-color)" : "#999")};
+  }
+`;
+
+const ErrorMessage = styled.div`
+  color: var(--danger-color);
+  background: rgba(255, 75, 43, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--danger-color);
+  margin-bottom: 1rem;
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const CertificateIdDisplay = styled.div`
+  background: rgba(0, 200, 83, 0.1);
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  color: var(--success-color);
+  font-weight: 600;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  border: 1px dashed var(--success-color);
+
+  span {
+    color: var(--text-primary);
+    margin-left: 0.5rem;
+    font-weight: 700;
+  }
+`;
+
 export default Dashboard;
-export async function getData(){};

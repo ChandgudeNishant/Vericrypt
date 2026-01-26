@@ -1,52 +1,64 @@
-import React from 'react';
+import React from "react";
 import styled from "styled-components";
-import Logo from './logo.png'
+import Logo from "./images/logo.png";
 
+import { useNavigate } from "react-router-dom";
+import {
+  PageContainer,
+  GlassCard,
+  Title,
+  SubTitle,
+  GlassButton,
+  BackButton,
+} from "../components/common/GlassComponents";
+
+import { FaArrowLeft, FaLaptopCode } from "react-icons/fa";
+
+import DashboardHeader from "../components/common/DashboardHeader";
 
 export default function Marksheet() {
+  const navigate = useNavigate();
 
-
-  
-  
-  
-  
-  
-  
-  
-  
   return (
-<FormContainer>
-<img src={Logo} alt="Logo.png"/>
-
-<h1>Vericrypt</h1>
- <div className='head'>Coming soon...✌️ </div>
- 
- </FormContainer>
+    <PageContainer>
+      <DashboardHeader />
+      <BackButton
+        onClick={() => navigate("/dashboard")}
+        style={{
+          alignSelf: "center",
+          width: "100%",
+          maxWidth: "480px",
+        }}
+      >
+        <FaArrowLeft /> Back
+      </BackButton>
+      <GlassCard>
+        <LogoImg src={Logo} alt="Vericrypt" />
+        <IconWrapper>
+          <FaLaptopCode />
+        </IconWrapper>
+        <Title>Marksheet System</Title>
+        <SubTitle style={{ marginBottom: "2rem" }}>
+          This feature is currently under active development.
+          <br />
+          Check back soon!
+        </SubTitle>
+        <GlassButton secondary onClick={() => navigate("/dashboard")}>
+          Back to Dashboard
+        </GlassButton>
+      </GlassCard>
+    </PageContainer>
   );
 }
-const FormContainer = styled.div`
-height: 100vh;
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1rem;
-  align-items: center;
-  background-color: #1e1928  ;
-  .head{
-    color: white;
-    font-weight:bold;
-    font-size: calc(30px + 2vmin);
 
-    text-transform: uppercase;
-  }
-  img {
-    height: 10rem;
-  }
-  h1 {
-    color: white;
-    text-transform: uppercase;
-    font-size: calc(20px + 2vmin);
-  }
+const LogoImg = styled.img`
+  height: 90px;
+  margin-bottom: 2rem;
+`;
 
-  `;
+const IconWrapper = styled.div`
+  font-size: 4rem;
+  color: var(--accent-color);
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+`;

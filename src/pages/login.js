@@ -1,168 +1,122 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import styled from "styled-components";
-import Logo from "./logo.png";
-//import {useNavigate} from 'react-router-dom';
-import { useEffect, useState } from "react";
-import image from './VERICRYPT.png';
-//let [contractData, setContractData] = useState("");
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import styled, { keyframes } from "styled-components";
+import { FaWallet, FaShieldAlt } from "react-icons/fa";
+import Logo from "./images/logo.png";
+import {
+  connectWallet,
+  getCurrentWalletConnected,
+  addWalletListener,
+} from "../utils/ethereum";
+import {
+  PageContainer,
+  GlassCard,
+  GlassButton,
+  Title,
+  SubTitle,
+} from "../components/common/GlassComponents";
 
 export default function Login() {
-  
-    const [walletAddress, setWalletAddress] = useState("");
-  
-    useEffect(() => {
-      getCurrentWalletConnected();
-      addWalletListener();
-    }, [walletAddress]);
-    let [account , setAccount]= useState("");
-
-    const connectWallet = async () => {
-      if (typeof window != "undefined" && typeof window.ethereum != "undefined") {
-        try {
-          /* MetaMask is installed */
-          const accounts = await window.ethereum.request({
-            method: "eth_requestAccounts",
-          });
-          setWalletAddress(accounts[0]);
-          localStorage.setItem("walletAddress", accounts[0]); // store the address in local storage
-
-          console.log(accounts[0]);
-         
-         
-          } 
-        catch (err) {
-          console.error(err.message);
-        }
-      } else {
-        /* MetaMask is not installed */
-        console.log("Please install MetaMask");
-      }
-    };
-  
-    const getCurrentWalletConnected = async () => {
-      if (typeof window != "undefined" && typeof window.ethereum != "undefined") {
-        try {
-          const accounts = await window.ethereum.request({
-            method: "eth_accounts",
-          });
-          if (accounts.length > 0) {
-            setWalletAddress(accounts[0]);
-            console.log(accounts[0]);
-            navigate('/dashboard', {replace: true})
-          } else {
-            console.log("Connect to MetaMask using the Connect button");
-          }
-        } catch (err) {
-          console.error(err.message);
-        }
-      } else {
-        /* MetaMask is not installed */
-        console.log("Please install MetaMask");
-      }
-    };
-  
-    const addWalletListener = async () => {
-      if (typeof window != "undefined" && typeof window.ethereum != "undefined") {
-        window.ethereum.on("accountsChanged", (accounts) => {
-          setWalletAddress(accounts[0]);
-          console.log(accounts[0]);
-        });
-      } else {
-        /* MetaMask is not installed */
-        setWalletAddress("");
-        console.log("Please install MetaMask");
-      }
-    };
-  
-
-  //const navigate = useNavigate();
-  
-  //const handleClick = () => {
-    // 👇️ navigate programmatically
-    //navigate('/dashboard', {replace: true})
-  //};
+  const [isConnecting, setIsConnecting] = useState(false);
   let navigate = useNavigate();
-  
-  return(
-    <FormContainer> 
-        <img className='bg' src={image} alt='bg'/>
 
-    <form action=''>
-      <div className="brand">
-      <img src={Logo} alt="Logo.png"/>
-      <h1>Vericrypt</h1>
-       
-      </div>
-      <h1>Certificate Verification System</h1>
-      <button type="button" onClick= {connectWallet}>Login</button>
-    </form>
-    </FormContainer> 
+  useEffect(() => {
+    const initWallet = async () => {
+      const address = await getCurrentWalletConnected();
+      if (address) {
+        navigate("/dashboard", { replace: true });
+      }
+    };
+    initWallet();
 
+    addWalletListener((address) => {
+      if (address) navigate("/dashboard", { replace: true });
+    });
+  }, [navigate]);
+
+  const handleConnect = async () => {
+    setIsConnecting(true);
+    try {
+      const address = await connectWallet();
+      if (address) {
+        navigate("/dashboard", { replace: true });
+      }
+    } catch (error) {
+      console.error("Connection failed", error);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  return (
+    <PageContainer>
+      <ContentWrapper>
+        <GlassCard>
+          <BrandSection>
+            <LogoWrapper>
+              {Logo ? (
+                <img src={Logo} alt="Vericrypt Logo" />
+              ) : (
+                <FaShieldAlt size={50} color="#00d2ff" />
+              )}
+            </LogoWrapper>
+            <Title>Vericrypt</Title>
+            <SubTitle>Secure Certificate Verification System</SubTitle>
+          </BrandSection>
+
+          <ActionSection>
+            <GlassButton
+              onClick={handleConnect}
+              disabled={isConnecting}
+              fullWidth
+            >
+              <FaWallet className="icon" />
+              {isConnecting ? "Connecting..." : "Connect Wallet"}
+            </GlassButton>
+            <MetaMaskHint>Ensure you have MetaMask installed</MetaMaskHint>
+          </ActionSection>
+        </GlassCard>
+      </ContentWrapper>
+    </PageContainer>
   );
-
 }
-const FormContainer = styled.div`
-height: 165vh;
-  width: 100vw;
+
+const float = keyframes`
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+`;
+
+const ContentWrapper = styled.div`
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
+const BrandSection = styled.div`
+  margin-bottom: 3rem;
+  animation: ${float} 6s ease-in-out infinite;
+`;
+
+const LogoWrapper = styled.div`
+  margin-bottom: 1rem;
+  img {
+    height: 80px;
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
+  }
+`;
+
+const ActionSection = styled.div`
+  width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 1rem;
   align-items: center;
-  background-color: #1e1928  ;
-  .bg{
-  
-    height: 1200vh;
-    background-position: center;
-    background-size: cover;
-    }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    justify-content: center;
-    img {
-      height: 5rem;
-    }
-    h1 {
-      color: white;
-      text-transform: uppercase;
-    }
-  }
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    background-color: #00000076;
-    border-radius: 2rem;
-    padding: 3rem 5rem;
-  }
-  button {
-    background-color: #893177;
-    color: white;
-    padding: 1rem 2rem;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 0.4rem;
-    font-size: 1rem;
-    text-transform: uppercase;
-    &:hover {
-      background-color: #8c58ae;
-    }
-  }
-  h1 {
-    color: white;
-    text-transform: capitalize;
-  }
-  span {
-    color: white;
-    text-transform: uppercase;
-    a {
-      color: #4e0eff;
-      text-decoration: none;
-      font-weight: bold;
-    }
-  }
+  gap: 1rem;
+`;
+
+const MetaMaskHint = styled.span`
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
 `;
