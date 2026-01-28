@@ -32,7 +32,7 @@ const CertificateGenerator = () => {
   const certificateRef = useRef(null);
 
   // Hardcoded for now, but ideally from environment or config
-  const contractAddress = "0x4de5523c1000104AB91007DBF0210bF8c303D5c4";
+  const contractAddress = "0x21f994799C737f9516daDB69DB3cD3e61DA8Ee77"; // Vericrypt contract address
 
   const getData = async () => {
     if (!inputCertId.trim()) {
@@ -169,10 +169,12 @@ const CertificateGenerator = () => {
             {/* Candidate Name - using cursive font */}
             <OverlayText
               top="43.5%"
-              left="11%"
+              left="3.5%"
+              transform="translate(0, -50%)"
               size="52px"
               font="'Great Vibes', cursive"
               color="#1a1a1a"
+              align="left"
             >
               {certificateData.candidateName}
             </OverlayText>
@@ -218,12 +220,13 @@ const CertificateGenerator = () => {
 
             {/* Certificate ID */}
             <OverlayText
-              top="90.4%"
+              top="90.2%"
               left="14.7%"
               transform="translate(0, -50%)"
               size="17.5px"
               color="#3f3e3eff"
-              font="'Courier New', monospace"
+              font="'Courier New', monospace, "
+              bold="true"
               align="left"
             >
               {certificateData.id}

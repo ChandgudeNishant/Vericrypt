@@ -36,8 +36,8 @@ function Dashboard() {
   const [ownerRight, setOwnerRight] = useState("");
 
   // Hardcoded for now, but ideally env var
-  const owner = "0xD7E3fa332A5C590EF889c51Fcf48b31b5d408937";
-  const contractAddress = "0x4de5523c1000104AB91007DBF0210bF8c303D5c4";
+  const owner = "0xEc3d549d355f2c1daab12C8D519EA170Cf086Ffe"; // Vericrypt-Admin-Polygon-Amoy-Testnet wallet address
+  const contractAddress = "0x21f994799C737f9516daDB69DB3cD3e61DA8Ee77"; // Vericrypt-Admin-Polygon-Amoy-Testnet contract address
 
   const [certificateData, setCertificateData] = useState({});
 
@@ -114,7 +114,9 @@ function Dashboard() {
           setCreatedCertId(CertificateId);
           setShowSuccessModal(true);
         } else {
-          setOwnerRight(`Access Denied: Admin Rights Required`);
+          setOwnerRight(
+            `Access Denied: Admin Rights Required, Login with Admin Wallet: ${owner}`,
+          );
         }
       }
     } catch (error) {
@@ -285,19 +287,38 @@ function Dashboard() {
         <GlassCard maxWidth="100%">
           <SectionTitle>Verify Certificate</SectionTitle>
           <VerificationBox>
-            <SearchBox>
-              <GlassInputGroup style={{ flex: 1 }}>
-                <FaFileContract className="icon" />
-                <GlassInput
-                  type="text"
-                  id="CertificateId1"
-                  placeholder="Enter Certificate ID to Verify"
-                />
-              </GlassInputGroup>
-              <IconButton onClick={getData}>
-                <FaSearch />
-              </IconButton>
-            </SearchBox>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.5rem",
+                width: "100%",
+              }}
+            >
+              <SearchBox>
+                <GlassInputGroup style={{ flex: 1 }}>
+                  <FaFileContract className="icon" />
+                  <GlassInput
+                    type="text"
+                    id="CertificateId1"
+                    placeholder="Enter Certificate ID to Verify"
+                  />
+                </GlassInputGroup>
+                <IconButton onClick={getData}>
+                  <FaSearch />
+                </IconButton>
+              </SearchBox>
+              <span
+                style={{
+                  fontSize: "0.85rem",
+                  color: "var(--text-secondary)",
+                  marginLeft: "0.5rem",
+                  textAlign: "left",
+                }}
+              >
+                Example: <strong>Ver123</strong>
+              </span>
+            </div>
 
             {gotError1 && <ErrorMessage>{gotError1}</ErrorMessage>}
 
