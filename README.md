@@ -6,6 +6,16 @@ By leveraging **smart contracts** and **decentralized blockchain infrastructure*
 
 ---
 
+## ↗️ Live Link of Vericypt:
+
+https://vericrypt.netlify.app
+
+## 🎬 Vericrypt Demo Video
+
+[![Vericrypt Demo](https://img.youtube.com/vi/abcd1234/0.jpg)](https://github.com/user-attachments/assets/5cbce898-d259-43ee-ae1e-9829884ca418)
+
+---
+
 ## ✨ Key Features
 
 - 🛡️ Prevents fake certificates using blockchain immutability
