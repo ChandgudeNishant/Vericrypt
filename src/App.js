@@ -7,6 +7,7 @@ import Background3D from "./components/Background3D";
 import Register from "./pages/register";
 import Down from "./pages/download";
 import Marksheet from "./pages/marksheet";
+import Footer from "./components/common/Footer";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="down" element={<Down />} />
         <Route path="marksheet" element={<Marksheet />} />
       </Routes>
+      <Footer />
     </Router>
   );
 }
